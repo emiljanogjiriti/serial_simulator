@@ -1,38 +1,54 @@
 import time
 import serial
+import msvcrt
+import struct
 
-# configure the serial connections (the parameters differs on the device you are connecting to)
 ser = serial.Serial(
-	port='/dev/tty.usbserial-AL0151UO',
-	baudrate=1000000,
-	parity=serial.PARITY_ODD,
-	stopbits=serial.STOPBITS_TWO,
-	bytesize=serial.SEVENBITS
+	port 		= 'COM10',
+	#port='/dev/tty.usbserial-AL0151UO',
+	baudrate 	= 57600,
+	parity 		= serial.PARITY_NONE,
+	stopbits 	= serial.STOPBITS_ONE,
+	bytesize	= serial.EIGHTBITS,
+	timeout 	= 1
 )
 
-if not ser.isOpen() :
-	ser.open()
+motor_1 = 0
+motor_2 = 0
 
-print 'Enter your commands below.\r\nInsert "exit" to leave the application.'
+serial_output = ''
+special_char = False
 
-input=1
+def getch() :
+	#needs different function for OSX, linux in future
+	return msvcrt.getch()
+
+input = 'A'
+
 while 1 :
-	# get keyboard input
-	input = raw_input(">> ")
-        # Python 3 users
-        # input = input(">> ")
-	if input == 'exit':
+	input = getch()
+
+	if ord(input) == 224 :
+		input = getch()
+
+		if ord(input) == 72 :
+			motor_1 += 1
+			motor_2 += 1
+		elif ord(input) == 80 :
+			motor_1 += -1
+			motor_2 += -1
+		elif ord(input) == 75 :
+			motor_1 += +1
+			motor_2 += -1
+		elif ord(input) == 77 :
+			motor_1 += -1
+			motor_2 += +1
+
+		print ord(str(input))
+		serial_output = '@1' + struct.pack('b', motor_1) + struct.pack('b', motor_2)
+		print '@1' + '[' + str(motor_1) + '][' + str(motor_2) + ']'
+		ser.write(serial_output)
+
+	elif input == 'x':
 		ser.close()
 		exit()
-	else:
-		# send the character to the device
-		# (note that I happend a \r\n carriage return and line feed to the characters - this is requested by my device)
-		ser.write(input + '\r\n')
-		out = ''
-		# let's wait one second before reading output (let's give device time to answer)
-		time.sleep(1)
-		while ser.inWaiting() > 0:
-			out += ser.read(1)
-			
-		if out != '':
-			print ">>" + out
