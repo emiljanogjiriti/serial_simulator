@@ -1,21 +1,21 @@
 import time
 import serial
+import serial.tools.list_ports
 import msvcrt
 import struct
-
 import platform
+import Queue
+import threading
 
 print platform.system() + " system detected"
-
-import serial.tools.list_ports
 
 ports = list(serial.tools.list_ports.comports())
 prompt = "Select a port or press 'q' to quit"
 
-print prompt
-
 for i in xrange(len(ports)):
     print "[" + str(i) + "] " + ports[i][0]
+
+print prompt
 
 def getch() :
 	#needs different function for OSX, linux in future
@@ -23,11 +23,6 @@ def getch() :
 
 user_input = getch()
 user_port = ""
-
-import Queue
-import threading
-
-
 
 while user_input != 'q':
 	try:
@@ -48,9 +43,9 @@ while user_input != 'q':
 		print prompt
 		user_input = getch()
 
-class ClientThread ( threading.Thread ):
+class ClientThread (threading.Thread):
 
-	def run ( self ):
+	def run (self):
 
 		while True:
 
@@ -77,7 +72,6 @@ motor_2 = 0
 serial_output = ''
 special_char = False
 
-
 input = '0'
 
 while 1:
@@ -86,16 +80,16 @@ while 1:
 	if ord(input) == 224:
 		input = getch()
 
-		if ord(input) == 72:
+		if ord(input) == 72: # up arrow
 			motor_1 += 2
 			motor_2 += 2
-		elif ord(input) == 80:
+		elif ord(input) == 80: # down arrow
 			motor_1 += -2
 			motor_2 += -2
-		elif ord(input) == 75:
+		elif ord(input) == 75: # left arrow
 			motor_1 += -2
 			motor_2 += +2
-		elif ord(input) == 77:
+		elif ord(input) == 77: # right arrow
 			motor_1 += +2
 			motor_2 += -2
 
