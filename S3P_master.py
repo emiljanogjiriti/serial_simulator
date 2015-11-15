@@ -17,6 +17,7 @@ elif platform.win32_ver()[0] != '' :
 	os_name = os_win
 elif platform.dist()[0] != '' :
 	os_name = os_linux
+
 print os_name + " platform detected"
 
 if os_name == os_win :
@@ -24,14 +25,19 @@ if os_name == os_win :
 	def getch() :
 		return msvcrt.getch()
 else :
+	import getch as g
+	def getch() :
+		return g.getch()
+"""
 	import sys, tty, termios
 	old_settings = termios.tcgetattr(sys.stdin.fileno())
-    try :
-    	tty.setraw(sys.stdin.fileno())
+	try :
+		tty.setraw(sys.stdin.fileno())
 	finally :
 		termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    def getch() :
-    	return sys.stdin.read(1)
+	def getch() :
+		return sys.stdin.read(1)
+"""
 
 ports = list(serial.tools.list_ports.comports())
 prompt = "Select a port or press 'q' to quit"
