@@ -1,13 +1,37 @@
 import time
 import serial
 import serial.tools.list_ports
-import msvcrt
 import struct
 import platform
 import Queue
 import threading
 
-print platform.system() + " system detected"
+os_name = ""
+os_mac = "Mac"
+os_win = "Windows"
+os_linux = "Linux"
+
+if platform.mac_ver()[0] != '' :
+	os_name = os_mac
+elif platform.win32_ver()[0] != '' :
+	os_name = os_win
+elif platform.dist()[0] != '' :
+	os_name = os_linux
+print os_name + " platform detected"
+
+if os_name == os_win :
+	import msvcrt
+	def getch() :
+		return msvcrt.getch()
+else :
+	import sys, tty, termios
+	old_settings = termios.tcgetattr(sys.stdin.fileno())
+    try :
+    	tty.setraw(sys.stdin.fileno())
+	finally :
+		termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    def getch() :
+    	return sys.stdin.read(1)
 
 ports = list(serial.tools.list_ports.comports())
 prompt = "Select a port or press 'q' to quit"
@@ -16,10 +40,6 @@ for i in xrange(len(ports)):
     print "[" + str(i) + "] " + ports[i][0]
 
 print prompt
-
-def getch() :
-	#needs different function for OSX, linux in future
-	return msvcrt.getch()
 
 user_input = getch()
 user_port = ""
