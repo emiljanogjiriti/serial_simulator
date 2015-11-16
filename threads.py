@@ -1,46 +1,54 @@
-import setup
-import random
-from time import clock, sleep
+
+from time import clock
 from threading import Thread
-
-io = setup.IO()
-user_input = '';
  
-class MyThread(Thread):
+class Watchdog(Thread):
 
-    def __init__(self, name):
+	thread_alive = True
+	
+	def __init__(self):
 
-        Thread.__init__(self)
-        self.name = name
-        self.start()
+		Thread.__init__(self)
+		self.start()
 
-    def run(self):
+	def run(self):
 
-        amount = random.randint(1, 5)
-        sleep(amount)
-        clock_start = clock()
-        while (clock() - clock_start) > 1:
-        	a = 1
-        msg = "%s has finished!" % self.name
-        print(msg)
- 
-def create_threads():
+		clock_start = clock()
+		clock_last = clock()
 
-    for i in range(1):
-        name = "Thread #%s" % (i+1)
-        my_thread = MyThread(name=name)
- 
-if __name__ == "__main__":
+		while (self.thread_alive):
+			if (clock_last - clock_start) > 1:
+				print 'TICK'
+				clock_start = clock_last
+			else:
+				clock_last = clock()
 
-	last_clock = clock()
-	this_clock = clock()
+	def stop(self):
 
-	while user_input != 'q':
+		self.thread_alive = False
 
-		user_input = io.getch()
-		last_clock = this_clock
-		this_clock = clock()
+class Serial_printer(Thread):
 
-		print str(this_clock - last_clock) + ' seconds since last keypress'
-		print user_input
-		create_threads()
+	thread_alive = True
+	serial_rx = None
+	awaiting = False
+	
+	def __init__(self, serial):
+
+		Thread.__init__(self)
+		self.start()
+		self.serial_rx = serial
+
+	def run(self):
+
+		while (self.thread_alive):
+			if self.serial_rx is not None:
+				incoming = self.serial_rx.read()
+				if incoming is not '':
+					print(incoming),
+
+	def stop(self):
+		self.thread_alive = False
+
+	def listen(self):
+		self.awaiting = True
