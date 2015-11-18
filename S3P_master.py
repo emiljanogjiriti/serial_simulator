@@ -1,86 +1,43 @@
-import threads
-import setup
-import serial.tools.list_ports
-import serial
 import random
 import struct
-io = setup.IO()
+import threads
+import sys
+import io_utils
+import serial
+import serial.tools.list_ports
+import serial_manager
 
-user_input = None
-user_port = None
-
+utils = io_utils.Utility()
 alive = True
-ser = None
 
-watchdog = None
-serial_printer = None
-
-def toggle_watchdog(serial=None):
-	global watchdog
-	if watchdog is None:
-		print 'Starting watchdog...'
-		watchdog = threads.Watchdog()
-	else:
-		print 'Stopping watchdog...'
-		watchdog.stop()
-		watchdog = None
-
-def quit(serial=None): 
+def quit():
 	global alive
 	alive = False
 
-def start_serial_printer(serial):
-	global serial_printer
-	serial_printer = threads.Serial_printer(serial)
+function_dict = {'q':quit }
 
-function_dict = {
-	'w':toggle_watchdog,
-	'q':quit,
-	'p':start_serial_printer
-	}
+def print_function_dict():
+	global function_dict
+	for key in function_dict.keys():
+		print "[" + key + "] " + function_dict[key].__name__
 
+manager = serial_manager.SerialManager()
 print "Select a port to connect to or a menu option below"
-print ""
-
-ports = list(serial.tools.list_ports.comports())
-
-for i in xrange(len(ports)):
-    print "[" + str(i) + "] " + ports[i][0]
-
-for key in function_dict.keys():
-	print "[" + key + "] " + function_dict[key].__name__
+manager.list_ports()
 
 while alive:
 
-	user_input = io.getch()
+	print_function_dict()
 
-	try:
-		user_port = ports[int(user_input)][0]
-		print "Attempting to connect to port " + user_port + "..."
-		ser = serial.Serial(
-			port 		= user_port,
-			baudrate 	= 250000,
-			parity 		= serial.PARITY_NONE,
-			stopbits 	= serial.STOPBITS_ONE,
-			bytesize	= serial.EIGHTBITS,
-			timeout 	= 0.01,
-			writeTimeout = 0.01
-		)
+	user_input = utils.getch()
 
-	except serial.serialutil.SerialException:
-		print "Connection failed"
-		print function_dict
+	if manager.open_port(user_input, 250000):
+		manager.add_menu_functions(function_dict)
+	else:
+		try:
+			function_dict[user_input]()
+			print "'" + user_input + "' pressed"
+		except KeyError:
+			print 'No command for that key'
 
-	except ValueError:
-		a = None
-
-	try:
-		function_dict[user_input](ser)
-		print "'" + user_input + "' pressed"
-	except KeyError:
-		print 'No command for that key'
-
-if watchdog is not None:
-	watchdog.stop()
-if serial_printer is not None:
-	serial_printer.stop()
+manager.close()

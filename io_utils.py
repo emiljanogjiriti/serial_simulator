@@ -1,4 +1,4 @@
-class IO:
+class Utility:
 
 	os_name = ""
 	os_mac = "Mac"
