@@ -1,10 +1,9 @@
+# max.prokopenko@gmail.com
+# written for openrobotics.ca
+
 import random
 import struct
-import threads
-import sys
 import io_utils
-import serial
-import serial.tools.list_ports
 import serial_manager
 
 utils = io_utils.Utility()
@@ -21,13 +20,15 @@ def print_function_dict():
 	for key in function_dict.keys():
 		print "[" + key + "] " + function_dict[key].__name__
 
+function_dict['m'] = print_function_dict
+
 manager = serial_manager.SerialManager()
 print "Select a port to connect to or a menu option below"
 manager.list_ports()
 
-while alive:
+print_function_dict()
 
-	print_function_dict()
+while alive:
 
 	user_input = utils.getch()
 

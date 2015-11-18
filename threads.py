@@ -1,6 +1,7 @@
 
 from time import clock
 from threading import Thread
+import struct
  
 class Watchdog(Thread):
 
@@ -45,7 +46,8 @@ class Serial_printer(Thread):
 			if self.serial_rx is not None:
 				incoming = self.serial_rx.read()
 				if incoming is not '':
-					print(incoming),
+					packet = struct.unpack('B', incoming)
+					print packet[0]
 
 	def stop(self):
 		self.thread_alive = False

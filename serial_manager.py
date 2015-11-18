@@ -41,6 +41,10 @@ class SerialManager(object):
 			sys.exc_clear()
 			return False
 
+	def write(self):
+		if self.serial_io is not None:
+			self.serial_io.write("@RGB123")
+
 	def toggle_watchdog(self):
 		if self.watchdog is None:
 			print "Starting watchdog..."
@@ -58,6 +62,7 @@ class SerialManager(object):
 		if self.serial_io is not None:
 			dict['p'] = self.start_serial_printer
 			dict['w'] = self.toggle_watchdog
+			dict['s'] = self.write
 
 	def list_ports(self):
 		self.ports = list(serial.tools.list_ports.comports())
