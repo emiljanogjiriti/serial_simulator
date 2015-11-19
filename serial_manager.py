@@ -10,6 +10,7 @@ class SerialManager(object):
 	user_baud = None
 	serial_io = None
 	watchdog = None
+	auto_timer = None
 	serial_printer = None
 	ports = None
 
@@ -43,7 +44,7 @@ class SerialManager(object):
 
 	def write(self):
 		if self.serial_io is not None:
-			self.serial_io.write("@RGB123")
+			self.serial_io.write("@RGBabc")
 
 	def toggle_watchdog(self):
 		if self.watchdog is None:
@@ -58,11 +59,11 @@ class SerialManager(object):
 		print "Starting serial printer on " + self.user_port
 		self.serial_printer = threads.Serial_printer(self.serial_io)
 
-	def add_menu_functions(self, dict):
-		if self.serial_io is not None:
-			dict['p'] = self.start_serial_printer
-			dict['w'] = self.toggle_watchdog
-			dict['s'] = self.write
+	def start_auto_timer(self):
+		print "Starting auto timed function"
+		def thing_to_do():
+			print "AT THING TO DO"
+		self.auto_timer = threads.Auto_timer(thing_to_do, 0.1)
 
 	def list_ports(self):
 		self.ports = list(serial.tools.list_ports.comports())
@@ -74,3 +75,12 @@ class SerialManager(object):
 			self.watchdog.stop()
 		if self.serial_printer is not None:
 			self.serial_printer.stop()
+		if self.auto_timer is not None:
+			self.auto_timer.stop()
+
+	def add_menu_functions(self, dict):
+		if self.serial_io is not None:
+			dict['p'] = self.start_serial_printer
+			dict['w'] = self.toggle_watchdog
+			dict['s'] = self.write
+			dict['a'] = self.start_auto_timer
