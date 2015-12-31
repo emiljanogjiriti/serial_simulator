@@ -1,54 +1,44 @@
-import time
-import serial
-import msvcrt
+# max.prokopenko@gmail.com
+# written for openrobotics.ca
+
+import random
 import struct
+import io_utils
+import serial_manager
 
-ser = serial.Serial(
-	port 		= 'COM10',
-	#port='/dev/tty.usbserial-AL0151UO',
-	baudrate 	= 57600,
-	parity 		= serial.PARITY_NONE,
-	stopbits 	= serial.STOPBITS_ONE,
-	bytesize	= serial.EIGHTBITS,
-	timeout 	= 1
-)
+utils = io_utils.Utility()
+alive = True
 
-motor_1 = 0
-motor_2 = 0
+def quit():
+	global alive
+	alive = False
 
-serial_output = ''
-special_char = False
+function_dict = {'q':quit }
 
-def getch() :
-	#needs different function for OSX, linux in future
-	return msvcrt.getch()
+def print_function_dict():
+	global function_dict
+	for key in function_dict.keys():
+		print "[" + key + "] " + function_dict[key].__name__
 
-input = 'A'
+function_dict['m'] = print_function_dict
 
-while 1 :
-	input = getch()
+manager = serial_manager.SerialManager()
+print "Select a port to connect to or a menu option below"
+manager.list_ports()
 
-	if ord(input) == 224 :
-		input = getch()
+print_function_dict()
 
-		if ord(input) == 72 :
-			motor_1 += 1
-			motor_2 += 1
-		elif ord(input) == 80 :
-			motor_1 += -1
-			motor_2 += -1
-		elif ord(input) == 75 :
-			motor_1 += +1
-			motor_2 += -1
-		elif ord(input) == 77 :
-			motor_1 += -1
-			motor_2 += +1
+while alive:
 
-		print ord(str(input))
-		serial_output = '@1' + struct.pack('b', motor_1) + struct.pack('b', motor_2)
-		print '@1' + '[' + str(motor_1) + '][' + str(motor_2) + ']'
-		ser.write(serial_output)
+	user_input = utils.getch()
 
-	elif input == 'x':
-		ser.close()
-		exit()
+	if manager.open_port(user_input, 250000):
+		manager.add_menu_functions(function_dict)
+	else:
+		try:
+			function_dict[user_input]()
+			print "'" + user_input + "' pressed"
+		except KeyError:
+			print 'No command for that key'
+
+manager.close()
