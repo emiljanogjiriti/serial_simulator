@@ -15,12 +15,14 @@ class SerialManager(object):
 	ports = None
 
 	def __init__(self):
+		print ""
 		print "Initializing serial manager..."
 
 	def open_port(self, user_input, baud):
 
 		try:
 			self.user_port = self.ports[int(user_input)][0]
+			print ""
 			print "Attempting to connect to port " + self.user_port + "..."
 			self.serial_io = serial.Serial(
 				port 		= self.user_port,
@@ -31,10 +33,12 @@ class SerialManager(object):
 				timeout 	= 0.01,
 				writeTimeout = 0.01
 			)
+			print ""
 			print "Connected"
 			return True
 
 		except serial.serialutil.SerialException:
+			print ""
 			print "Connection failed"	
 			return False	
 
@@ -67,6 +71,13 @@ class SerialManager(object):
 
 	def list_ports(self):
 		self.ports = list(serial.tools.list_ports.comports())
+		dead_ports = list()
+		'''following 5 lines are to prevent Linux machines from showing non-USB ports'''
+		for port in self.ports:
+			if "ttyS" in port[1]:
+				dead_ports.append(port)
+		for port in dead_ports:
+			self.ports.remove(port)
 		for i in xrange(len(self.ports)):
 			print "[" + str(i) + "] " + self.ports[i][0]
 

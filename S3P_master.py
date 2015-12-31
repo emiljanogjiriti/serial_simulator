@@ -23,6 +23,7 @@ def print_function_dict():
 function_dict['m'] = print_function_dict
 
 manager = serial_manager.SerialManager()
+print ""
 print "Select a port to connect to or a menu option below"
 manager.list_ports()
 
