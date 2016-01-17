@@ -33,7 +33,7 @@ while alive:
 
 	user_input = utils.getch()
 
-	if manager.open_port(user_input, 250000):
+	if manager.open_port(user_input, 230400):
 		manager.add_menu_functions(function_dict)
 	else:
 		try:

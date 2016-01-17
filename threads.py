@@ -8,12 +8,10 @@ class Watchdog(Thread):
 	thread_alive = True
 	
 	def __init__(self):
-
 		Thread.__init__(self)
 		self.start()
 
 	def run(self):
-
 		clock_start = clock()
 		clock_last = clock()
 
@@ -25,7 +23,6 @@ class Watchdog(Thread):
 				clock_last = clock()
 
 	def stop(self):
-
 		self.thread_alive = False
 
 class Serial_printer(Thread):
@@ -35,13 +32,11 @@ class Serial_printer(Thread):
 	awaiting = False
 	
 	def __init__(self, serial):
-
 		Thread.__init__(self)
 		self.start()
 		self.serial_rx = serial
 
 	def run(self):
-
 		while (self.thread_alive):
 			if self.serial_rx is not None:
 				incoming = self.serial_rx.read(5)
@@ -65,14 +60,12 @@ class Auto_timer(Thread):
 	period = 1
 	
 	def __init__(self, event, period=1):
-
 		Thread.__init__(self)
 		self.period = period
 		self.event = event
 		self.start()
 
 	def run(self):
-
 		clock_start = clock()
 		clock_last = clock()
 

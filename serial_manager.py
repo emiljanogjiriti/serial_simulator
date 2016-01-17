@@ -30,6 +30,7 @@ class SerialManager(object):
 				parity 		= serial.PARITY_NONE,
 				stopbits 	= serial.STOPBITS_ONE,
 				bytesize	= serial.EIGHTBITS,
+				xonxoff 	= False,
 				timeout 	= 0.01,
 				writeTimeout = 0.01
 			)
@@ -48,7 +49,7 @@ class SerialManager(object):
 
 	def write(self):
 		if self.serial_io is not None:
-			self.serial_io.write("@RGBabc")
+			self.serial_io.write("@V2DT")
 
 	def toggle_watchdog(self):
 		if self.watchdog is None:
