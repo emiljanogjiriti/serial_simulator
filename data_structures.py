@@ -14,8 +14,8 @@ import struct
 class DataStructure:
 	'''Preliminary structure to hold C struct data for microcontroller network
 	'''
-
-	name = 0
+	#indices for location of values in dataIn and dataOut lists
+	name = 0 
 	packing_type = 1
 	current_value = 2
 
@@ -24,17 +24,27 @@ class DataStructure:
 		self.dataIn = []
 		self.dataOut = []
 
-	def getInputSize(self):
+	def get_input_packet_formatting(self):
 		packet_formatting = ''
 		for variable in self.dataIn:
 			packet_formatting += variable[DataStructure.packing_type]
-		return struct.calcsize(packet_formatting)
+		return packet_formatting
 
-	def getOutputSize(self):
+	def get_input_packet_size(self):
+		return struct.calcsize(self.get_input_packet_formatting())
+
+	def get_output_packet_formatting(self):
 		packet_formatting = ''
 		for variable in self.dataOut:
 			packet_formatting += variable[DataStructure.packing_type]
-		return struct.calcsize(packet_formatting)
+		return packet_formatting
+
+	def get_output_packet_size(self):
+		return struct.calcsize(self.get_output_packet_formatting())
+
+	def printOutputPacket(self):
+		for variable in self.dataOut:
+			print variable
 
 	def set(self, data):
 		print 'filling'
@@ -61,4 +71,4 @@ v2_drivetrain = DataStructure('@V2DT')
 v2_drivetrain.dataIn.append(['speed1', 'B', 0])
 v2_drivetrain.dataIn.append(['speed2', 'B', 0])
 v2_drivetrain.dataIn.append(['status', 'B', 0])
-v2_drivetrain.dataOut.append(['output', 'ccccccccccccccc'])
+v2_drivetrain.dataOut.append(['output', 'ccccccccccccccc', 0])

@@ -1,15 +1,14 @@
 
 from time import clock
 from threading import Thread
-import struct
+from data_structures import DataStructure
  
 class Watchdog(Thread):
-
-	thread_alive = True
 	
 	def __init__(self):
 		Thread.__init__(self)
 		self.start()
+		self.thread_alive = True
 
 	def run(self):
 		clock_start = clock()
@@ -25,28 +24,27 @@ class Watchdog(Thread):
 	def stop(self):
 		self.thread_alive = False
 
-class Serial_printer(Thread):
-
-	thread_alive = True
-	serial_rx = None
-	awaiting = False
+class SerialPrinter(Thread):
 	
-	def __init__(self, serial):
+	def __init__(self, serial, DataStructure):
 		Thread.__init__(self)
+		self.thread_alive = True
+		self.awaiting = False
+		self.serial = serial
+		self.data_structure = DataStructure
 		self.start()
-		self.serial_rx = serial
 
 	def run(self):
-		while (self.thread_alive):
-			if self.serial_rx is not None:
-				incoming = self.serial_rx.read(5)
+		i = 0
+		while (self.thread_alive and i < 2000):
+			i += 1
+			if self.serial is not None:
+				incoming = self.serial.read(self.data_structure.get_output_packet_size())
 				if incoming is not '':
-					packet_formatting = 'BBBBB'
-					if len(incoming) == struct.calcsize(packet_formatting):
+					packet_formatting = self.data_structure.get_output_packet_formatting()
+					if len(incoming) == self.data_structure.get_output_packet_size():
 						print "Packet received: " + incoming
-						packet = struct.unpack(packet_formatting, incoming)
-						print packet
-						print "%.3f" %((packet[4] * 256 + packet[3]) * 5.0/1024)
+						#data_structure.printOutputPacket()
 
 	def stop(self):
 		self.thread_alive = False
@@ -54,13 +52,11 @@ class Serial_printer(Thread):
 	def listen(self):
 		self.awaiting = True
 
-class Auto_timer(Thread):
-
-	thread_alive = True
-	period = 1
+class AutoTimer(Thread):
 	
 	def __init__(self, event, period=1):
 		Thread.__init__(self)
+		self.thread_alive = True
 		self.period = period
 		self.event = event
 		self.start()
@@ -77,5 +73,4 @@ class Auto_timer(Thread):
 				clock_last = clock()
 
 	def stop(self):
-
 		self.thread_alive = False

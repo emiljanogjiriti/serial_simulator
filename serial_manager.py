@@ -2,6 +2,8 @@ import threads
 import serial
 import serial.tools.list_ports
 import sys
+import data_structures
+import struct
 
 class SerialManager(object):
 
@@ -17,6 +19,7 @@ class SerialManager(object):
 	def __init__(self):
 		print ""
 		print "Initializing serial manager..."
+		self.counter = 0
 
 	def open_port(self, user_input, baud):
 
@@ -48,8 +51,10 @@ class SerialManager(object):
 			return False
 
 	def write(self):
+		self.counter += 1
+		self.counter = self.counter % 128
 		if self.serial_io is not None:
-			self.serial_io.write("@V2DT")
+			self.serial_io.write("@V2DT" + struct.pack('BBB', self.counter, self.counter, self.counter))
 
 	def toggle_watchdog(self):
 		if self.watchdog is None:
@@ -61,8 +66,9 @@ class SerialManager(object):
 			self.watchdog = None
 
 	def start_serial_printer(self):
-		print "Starting serial printer on " + self.user_port
-		self.serial_printer = threads.Serial_printer(self.serial_io)
+		DataStructure = data_structures.v2_drivetrain
+		print "Starting serial printer listening to " + DataStructure.delimiter + " on " + self.user_port
+		self.serial_printer = threads.SerialPrinter(self.serial_io, DataStructure)
 
 	def start_auto_timer(self):
 		print "Starting auto timed function"
