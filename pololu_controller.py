@@ -4,18 +4,20 @@ import struct
 class PololuController(object):
 
 	#baud_rate = 115200;
-	serial_io = None
-	position = 0 #centered
 
-	def __init__(self, manager):
+	def __init__(self, manager, device_number, cw_key, ccw_key):
 		print "Initializing Pololu motor controller"
-		self.serial_io = manager
+		self.manager = manager
+		self.device_number = device_number
+		self.position = 0
+		self.cw_key = cw_key
+		self.ccw_key = ccw_key
 
 	def move_right(self):
-		self.send_command(self.move(5))
+		self.send_command(self.move(2))
 
 	def move_left(self):
-		self.send_command(self.move(-5))
+		self.send_command(self.move(-2))
 
 	def move(self, adjustment):
 
@@ -29,22 +31,23 @@ class PololuController(object):
 
 		self.position = position
 
-		pololu_command = None
-
 		print "Moving to " + str(position)
 
 		if position >= 0:
-			pololu_command = 0xE1
+			pololu_command = 0x61
 		else:
-			pololu_command = 0xE0
+			pololu_command = 0x60
 			position = -position
 		
-		return struct.pack('B', pololu_command) + struct.pack('b', position)
+		return struct.pack('BBBb', 0xAA, self.device_number, pololu_command, position)
 
 	def send_command(self, command):
-		self.serial_io.write(command)
+		print command
+		#self.manager.acquire_mutex()
+		self.manager.serial_io.write(command)
+		#self.manager.release_mutex()
 
 	def add_menu_functions(self, dict):
-		dict['a'] = self.move_left
-		dict['d'] = self.move_right
+		dict[self.cw_key] = self.move_left
+		dict[self.ccw_key] = self.move_right
 

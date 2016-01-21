@@ -1,3 +1,4 @@
+import thread
 import threads
 import serial
 import serial.tools.list_ports
@@ -23,6 +24,9 @@ class SerialManager(object):
 
 	def open_port(self, user_input, baud):
 
+		self.mutex = thread.allocate_lock()
+		self.acquire_mutex()
+
 		try:
 			self.user_port = self.ports[int(user_input)][0]
 			print ""
@@ -34,8 +38,8 @@ class SerialManager(object):
 				stopbits 	= serial.STOPBITS_ONE,
 				bytesize	= serial.EIGHTBITS,
 				xonxoff 	= False,
-				timeout 	= 0.01,
-				writeTimeout = 0.01
+				timeout 	= 0.1,
+				writeTimeout = 0.1
 			)
 			print ""
 			print "Connected"
@@ -49,12 +53,19 @@ class SerialManager(object):
 		except Exception as e:
 			sys.exc_clear()
 			return False
+		self.release_mutex()
+
+	def acquire_mutex(self):
+		self.mutex.acquire()
+
+	def release_mutex(self):
+		self.mutex.release()
 
 	def write(self):
 		self.counter += 1
 		self.counter = self.counter % 128
 		if self.serial_io is not None:
-			self.serial_io.write("@V2DT" + struct.pack('BBB', self.counter, self.counter, self.counter))
+			self.serial_io.write('@V2DT' + struct.pack('BBB', self.counter, self.counter, self.counter))
 
 	def toggle_watchdog(self):
 		if self.watchdog is None:
@@ -99,6 +110,6 @@ class SerialManager(object):
 	def add_menu_functions(self, dict):
 		if self.serial_io is not None:
 			dict['p'] = self.start_serial_printer
-			dict['w'] = self.toggle_watchdog
-			dict['s'] = self.write
-			dict['a'] = self.start_auto_timer
+			#dict['w'] = self.toggle_watchdog
+			dict[' '] = self.write
+			#dict['a'] = self.start_auto_timer

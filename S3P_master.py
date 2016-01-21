@@ -5,6 +5,8 @@ import random
 import struct
 import io_utils
 import serial_manager
+from pololu_controller import PololuController
+from Servo import *
 
 utils = io_utils.Utility()
 alive = True
@@ -33,8 +35,29 @@ while alive:
 
 	user_input = utils.getch()
 
-	if manager.open_port(user_input, 230400):
+	if manager.open_port(user_input, 57600):
 		manager.add_menu_functions(function_dict)
+
+		elbow_rotation = PololuController(manager, 1, 'a', 'd')
+		elbow_elevation = PololuController(manager, 2, 's', 'w')
+		elbow_rotation.add_menu_functions(function_dict)
+		elbow_elevation.add_menu_functions(function_dict)
+
+		serv_2 = Robotis_Servo(manager, 2, 'i', 'k')
+		print 'Setting up Dynamixel 2'
+		serv_5 = Robotis_Servo(manager, 5, 'l', 'j')
+		print 'Setting up Dynamixel 5'
+		
+		serv_2.set_angvel(0.5)
+		serv_2.set_cw_limit(1)
+		serv_2.set_ccw_limit(4095)
+		serv_2.add_menu_functions(function_dict)
+
+		serv_5.set_angvel(0.5)
+		serv_5.set_cw_limit(800)
+		serv_5.set_ccw_limit(2800)
+		serv_5.add_menu_functions(function_dict)
+
 	else:
 		try:
 			function_dict[user_input]()

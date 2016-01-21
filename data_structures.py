@@ -72,3 +72,7 @@ v2_drivetrain.dataIn.append(['speed1', 'B', 0])
 v2_drivetrain.dataIn.append(['speed2', 'B', 0])
 v2_drivetrain.dataIn.append(['status', 'B', 0])
 v2_drivetrain.dataOut.append(['output', 'ccccccccccccccc', 0])
+
+mini_arm = DataStructure('@MARM')
+mini_arm.dataIn.append(['status', 'B', 0])
+mini_arm.dataOut.append(['analogReadings', 'HHHHHHHH', 0])
