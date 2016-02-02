@@ -1,14 +1,18 @@
 # max.prokopenko@gmail.com
 # written for openrobotics.ca
+import sys
+from os import path
+sys.path.append(path.dirname(__file__) + 'lib/') #for generic functionality
+sys.path.append(path.dirname(__file__) + 'modules/') #specific to various hardware
 
 import random
 import struct
-import io_utils
-import serial_manager
+from utilities import Utility
+from serial_manager import SerialManager
 from pololu_controller import PololuController
 from Servo import *
 
-utils = io_utils.Utility()
+utils = Utility()
 alive = True
 
 def quit():
@@ -24,7 +28,7 @@ def print_function_dict():
 
 function_dict['m'] = print_function_dict
 
-manager = serial_manager.SerialManager()
+manager = SerialManager()
 print ""
 print "Select a port to connect to or a menu option below"
 manager.list_ports()
