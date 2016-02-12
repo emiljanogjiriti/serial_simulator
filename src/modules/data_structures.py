@@ -18,6 +18,7 @@ class DataStructure:
 	name = 0 
 	packing_type = 1
 	current_value = 2
+	PADDING = 5
 
 	def __init__(self, delimiter):
 		self.delimiter = delimiter
@@ -42,15 +43,26 @@ class DataStructure:
 	def get_output_packet_size(self):
 		return struct.calcsize(self.get_output_packet_formatting())
 
-	def printOutputPacket(self):
+	def pack_into_received(self, data):
+		packet_formatting = self.get_output_packet_formatting()
+		if len(data) == self.get_output_packet_size():
+			print "Length of packet good"
+			return True
+		print "Length of packet bad"
+		return False
+
+	def print_received_struct(self):
 		for variable in self.dataOut:
 			print variable
 
-	def set(self, data):
-		print 'filling'
+	def get_outgoing_struct(self):
+		output = self.delimiter
+		for variable in self.dataIn:
+			output += struct.pack(variable[DataStructure.packing_type], variable[DataStructure.current_value])
+		return output
 
-	def get(self, data):
-		print 'sending'
+	def calculate_timeout(self, baudrate):
+		return (self.get_input_packet_size() + self.get_output_packet_size() + DataStructure.PADDING) * 10 / baudrate
 
 '''
 volatile struct dataIn
@@ -68,11 +80,11 @@ volatile struct dataOut
 '''
 
 v2_drivetrain = DataStructure('@V2DT')
-v2_drivetrain.dataIn.append(['speed1', 'B', 0])
-v2_drivetrain.dataIn.append(['speed2', 'B', 0])
-v2_drivetrain.dataIn.append(['status', 'B', 0])
-v2_drivetrain.dataOut.append(['output', 'ccccccccccccccc', 0])
+v2_drivetrain.dataIn.append(['speed1', 'B', ord('a')])
+v2_drivetrain.dataIn.append(['speed2', 'B', ord('b')])
+v2_drivetrain.dataIn.append(['status', 'B', ord('c')])
+v2_drivetrain.dataOut.append(['output', '16s', "abcdefghijklmnop"])
 
 mini_arm = DataStructure('@MARM')
-mini_arm.dataIn.append(['status', 'B', 0])
-mini_arm.dataOut.append(['analogReadings', 'HHHHHHHH', 0])
+mini_arm.dataIn.append(['status', 'B', ord('d')])
+mini_arm.dataOut.append(['analogReadings', 'H', 0])

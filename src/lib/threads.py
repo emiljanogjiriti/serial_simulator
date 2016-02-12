@@ -54,23 +54,45 @@ class SerialPrinter(Thread):
 
 class AutoTimer(Thread):
 	
-	def __init__(self, event, period=1):
+	def __init__(self, period=1, *events):
 		Thread.__init__(self)
 		self.thread_alive = True
 		self.period = period
-		self.event = event
+		self.event = events[0]
 		self.start()
 
 	def run(self):
 		clock_start = clock()
-		clock_last = clock()
+		last_event = clock_start
 
 		while (self.thread_alive):
-			if (clock_last - clock_start) > self.period:
+			tick = clock()
+			if (tick - last_event) > self.period:
 				self.event()
-				clock_start = clock_last
-			else:
-				clock_last = clock()
+				last_event += self.period
+				print "event error = " + str(last_event - tick)
+
+	def stop(self):
+		self.thread_alive = False
+
+
+class OneShotTimer(Thread):
+
+	def __init__(self, event, timeout=1):
+		Thread.__init__(self)
+		self.timeout = timeout
+		self.event = event
+		self.start()
+
+	def run(self):
+		self.thread_alive = True
+		clock_start = clock()
+		last_event = clock_start
+
+		while (self.thread_alive):
+			if (clock() - last_event) > self.timeout:
+				self.event()
+				self.thread_alive = False
 
 	def stop(self):
 		self.thread_alive = False

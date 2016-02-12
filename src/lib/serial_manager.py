@@ -61,11 +61,18 @@ class SerialManager(object):
 	def release_mutex(self):
 		self.mutex.release()
 
-	def write(self):
+	def receive_into(self, data_structure):
+		if self.serial_io is not None:
+				incoming = self.serial_io.read(data_structure.get_output_packet_size())
+				if incoming is not '':
+					return data_structure.pack_into_received(incoming)
+		return False
+
+	def write(self, message):
 		self.counter += 1
 		self.counter = self.counter % 128
 		if self.serial_io is not None:
-			self.serial_io.write('@V2DT' + struct.pack('BBB', self.counter, self.counter, self.counter))
+			self.serial_io.write(message)
 
 	def toggle_watchdog(self):
 		if self.watchdog is None:
@@ -80,12 +87,6 @@ class SerialManager(object):
 		DataStructure = data_structures.v2_drivetrain
 		print "Starting serial printer listening to " + DataStructure.delimiter + " on " + self.user_port
 		self.serial_printer = threads.SerialPrinter(self.serial_io, DataStructure)
-
-	def start_auto_timer(self):
-		print "Starting auto timed function"
-		def thing_to_do():
-			print "AT THING TO DO"
-		self.auto_timer = threads.Auto_timer(thing_to_do, 0.1)
 
 	def list_ports(self):
 		self.ports = list(serial.tools.list_ports.comports())
