@@ -59,7 +59,6 @@ class AutoTimer(Thread):
 		self.thread_alive = True
 		self.period = period
 		self.event = events[0]
-		self.start()
 
 	def run(self):
 		clock_start = clock()
@@ -68,9 +67,8 @@ class AutoTimer(Thread):
 		while (self.thread_alive):
 			tick = clock()
 			if (tick - last_event) > self.period:
-				self.event()
 				last_event += self.period
-				print "event error = " + str(last_event - tick)
+				self.event()
 
 	def stop(self):
 		self.thread_alive = False

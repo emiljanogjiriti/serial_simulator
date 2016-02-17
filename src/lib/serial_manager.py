@@ -38,8 +38,8 @@ class SerialManager(object):
 				stopbits 	= serial.STOPBITS_ONE,
 				bytesize	= serial.EIGHTBITS,
 				xonxoff 	= False,
-				timeout 	= 0.1,
-				writeTimeout = 0.1
+				timeout 	= None,
+				writeTimeout = None
 			)
 			print ""
 			print "Connected"

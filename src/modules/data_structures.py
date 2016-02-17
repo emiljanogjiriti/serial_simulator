@@ -41,14 +41,14 @@ class DataStructure:
 		return packet_formatting
 
 	def get_output_packet_size(self):
-		return struct.calcsize(self.get_output_packet_formatting())
+		return struct.calcsize(self.output_packet_formatting)
 
 	def pack_into_received(self, data):
-		packet_formatting = self.get_output_packet_formatting()
+		'''returns true if packet was large enough, false'''
+		#packet_formatting = self.get_output_packet_formatting()
 		if len(data) == self.get_output_packet_size():
-			print "Length of packet good"
+			self.dataOut = struct.unpack(self.output_packet_formatting, data)
 			return True
-		print "Length of packet bad"
 		return False
 
 	def print_received_struct(self):
@@ -62,7 +62,7 @@ class DataStructure:
 		return output
 
 	def calculate_timeout(self, baudrate):
-		return (self.get_input_packet_size() + self.get_output_packet_size() + DataStructure.PADDING) * 10 / baudrate
+		return (self.get_input_packet_size() + self.get_output_packet_size() + DataStructure.PADDING) * 10.0 / baudrate
 
 '''
 volatile struct dataIn
@@ -87,4 +87,4 @@ v2_drivetrain.dataOut.append(['output', '16s', "abcdefghijklmnop"])
 
 mini_arm = DataStructure('@MARM')
 mini_arm.dataIn.append(['status', 'B', ord('d')])
-mini_arm.dataOut.append(['analogReadings', 'H', 0])
+mini_arm.output_packet_formatting = 'HHHHHHHH'

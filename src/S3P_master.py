@@ -23,14 +23,18 @@ from data_structures import v2_drivetrain as v2dt
 from data_structures import mini_arm as marm
 
 def e0():
-	manager.write(v2dt.get_outgoing_struct())
-
-def e1():
-	print manager.receive_into(v2dt)
 	manager.write(marm.get_outgoing_struct())
 
+dataflag = False
+
+def e1():
+	global dataflag
+	dataflag = manager.receive_into(marm)
+	#manager.write(v2dt.get_outgoing_struct())
+
 def e2():
-	print manager.receive_into(marm)
+	#print manager.receive_into(v2dt)
+	pass
 
 event_list = list()
 
@@ -40,25 +44,41 @@ def schedule(time, *args):
 		event_timer = OneShotTimer(event, time)
 		event_list.append(event_timer)
 
-schedule(v2dt.calculate_timeout(115200), e0)
-schedule(marm.calculate_timeout(115200) + v2dt.calculate_timeout(115200), e1)
-schedule(0.5, e0)
+schedule(marm.calculate_timeout(115200), e1)
+print "Mini-arm read timeout: " + str(marm.calculate_timeout(115200))
+#schedule(marm.calculate_timeout(115200) + v2dt.calculate_timeout(115200), e1)
+#schedule(0.5, e2)
 
 def timer_function(): 
-	print 'Scheduler'
+	#print 'Scheduler'
+	e0()
 	for event in event_list:
 		event.run()
-sertest = AutoTimer(1, timer_function)
+sertest = AutoTimer(0.020, timer_function)
 
-while True:
 
-	user_input = raw_input()
+if manager.open_port('0', 115200):
+	sertest.start()
 
-	if manager.open_port(user_input, 57600):
-		print 'yay'
+try:
+	while True:
 
-	else:
-		if user_input == 'q' or user_input == 'quit':
-			sertest.stop()
-			manager.close()
-			quit()
+		if dataflag:
+			print marm.dataOut
+			dataflag = False
+
+		#user_input = raw_input()
+
+			'''
+		if manager.open_port(user_input, 115200):
+			sertest.start()
+		else:
+			if user_input == 'q' or user_input == 'quit':
+				sertest.stop()
+				manager.close()
+				quit()'''
+except KeyboardInterrupt:
+	print "Closing threads, serial port, and quitting..."
+	sertest.stop()
+	manager.close()
+	quit()
