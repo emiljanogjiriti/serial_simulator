@@ -1,7 +1,8 @@
+from __future__ import print_function
+from __future__ import unicode_literals
 
 from time import clock
 from threading import Thread
-from data_structures import DataStructure
  
 class Watchdog(Thread):
 	
@@ -16,7 +17,7 @@ class Watchdog(Thread):
 
 		while (self.thread_alive):
 			if (clock_last - clock_start) > 1:
-				print 'TICK'
+				print('TICK')
 				clock_start = clock_last
 			else:
 				clock_last = clock()
@@ -24,73 +25,60 @@ class Watchdog(Thread):
 	def stop(self):
 		self.thread_alive = False
 
-class SerialPrinter(Thread):
-	
-	def __init__(self, serial, DataStructure):
-		Thread.__init__(self)
-		self.thread_alive = True
-		self.awaiting = False
-		self.serial = serial
-		self.data_structure = DataStructure
-		self.start()
-
-	def run(self):
-		i = 0
-		while (self.thread_alive and i < 2000):
-			i += 1
-			if self.serial is not None:
-				incoming = self.serial.read(self.data_structure.get_output_packet_size())
-				if incoming is not '':
-					packet_formatting = self.data_structure.get_output_packet_formatting()
-					if len(incoming) == self.data_structure.get_output_packet_size():
-						print "Packet received: " + incoming
-						#data_structure.printOutputPacket()
-
-	def stop(self):
-		self.thread_alive = False
-
-	def listen(self):
-		self.awaiting = True
-
 class AutoTimer(Thread):
 	
-	def __init__(self, period=1, *events):
+	def __init__(self, period=1, events=None):
 		Thread.__init__(self)
-		self.thread_alive = True
 		self.period = period
-		self.event = events[0]
+		self.events = events
+		self.finished_events = False
+		self.alive = True
+		print(events)
 
 	def run(self):
 		clock_start = clock()
 		last_event = clock_start
-
-		while (self.thread_alive):
+		cei = 0 #current event index
+		while (self.alive):
 			tick = clock()
 			if (tick - last_event) > self.period:
 				last_event += self.period
-				self.event()
+				self.finished_events = False
+				cei = 0
+			if not self.finished_events:
+				try:
+					if (tick - last_event) > self.events[cei].time:
+						self.events[cei].run()
+						cei += 1
+				except IndexError:
+					self.finished_events = True
 
-	def stop(self):
-		self.thread_alive = False
+	def kill(self):
+		self.alive = False
 
-
-class OneShotTimer(Thread):
-
-	def __init__(self, event, timeout=1):
-		Thread.__init__(self)
-		self.timeout = timeout
+class EventWrapper:
+	def __init__(self, event, time=0):
+		self.time = time
 		self.event = event
-		self.start()
 
 	def run(self):
-		self.thread_alive = True
-		clock_start = clock()
-		last_event = clock_start
+		self.event()
 
-		while (self.thread_alive):
-			if (clock() - last_event) > self.timeout:
-				self.event()
-				self.thread_alive = False
+if __name__ == '__main__':
+	def ev0():
+		print('start of events')
+	def ev1():
+		print('ohe yes')
+	e0 = EventWrapper(ev0)
+	e1 = EventWrapper(ev1, time=0.001)
 
-	def stop(self):
-		self.thread_alive = False
+	a = AutoTimer(events=[e0, e1], period=1.0)
+	a.start()
+
+	try:
+		while True:
+			pass
+	except KeyboardInterrupt:
+		a.kill()
+		a.join()
+		quit(0)

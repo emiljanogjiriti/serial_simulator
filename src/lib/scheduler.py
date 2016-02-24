@@ -6,20 +6,20 @@ from time import clock
 from time import sleep
 
 class Scheduler(Process):
-	'''Schedules repeated or oneshot events'''
+	'''Schedules period or oneshot events'''
 
-	def __init__(self, queue=None, period=1):
+	def __init__(self, periodic_queue=None, oneshot_queue=None, period=1):
 		Process.__init__(self, name='')
 		self.period = period
 		self.event_list = []
-		self.queue = queue
+		self.periodic_queue = periodic_queue
 		self.advanced = False
-		print(queue)
-		while not queue.empty():
-			new_event = self.queue.get(True)
-			self.add_repeated(new_event, 0.1)
+		print(periodic_queue)
+		while not periodic_queue.empty():
+			new_event = self.periodic_queue.get(True)
+			self.add_periodic(new_event, 0.1)
 
-	def add_repeated(self, event, time):
+	def add_periodic(self, event, time):
 		self.event_list.append([event, time])
 
 	def add_oneshot(self, event):
@@ -52,20 +52,33 @@ class Scheduler(Process):
 				self.advance()
 
 class Test1(object):
+	
+	def change_message(self, message):
+		self.message = message
+
 	def do(self):
-		print('Yay')
+		try:
+			print(self.message)
+		except AttributeError:
+			print(str(self.__class__) + ' attribute error')
 
 if __name__ == '__main__':
 	print('Unit tests for ' + __file__)
 	
-	q = Queue()
-	test1 = Test1()
-	q.put(test1)
+	periodic = Queue()
+	oneshot = Queue()
 
-	s = Scheduler(queue=q, period=1)
+	test1 = Test1()
+	periodic.put(test1)
+
+	s = Scheduler(periodic_queue=periodic, oneshot_queue=oneshot, period=1)
 	#s.add_repeated(test1, 0.1)
 
 	try:
 		s.start()
+		user_in = ''
+		while(user_in not in ['quit','q','exit']):
+			test1.change_message(raw_input())
+			print(test1.message)
 	except KeyboardInterrupt:
 		s.terminate()

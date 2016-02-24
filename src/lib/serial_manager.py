@@ -63,9 +63,8 @@ class SerialManager(object):
 
 	def receive_into(self, data_structure):
 		if self.serial_io is not None:
-				incoming = self.serial_io.read(data_structure.get_output_packet_size())
-				if incoming is not '':
-					return data_structure.pack_into_received(incoming)
+				if self.serial_io.in_waiting >= data_structure.from_struct.size:
+					return data_structure.pack_into_received(self.serial_io.read(data_structure.from_struct.size))
 		return False
 
 	def write(self, message):

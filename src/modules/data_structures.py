@@ -65,7 +65,7 @@ def parse_into_dict(pair_list, c_struct):
 	return 'b'
 
 	#print ''.join(map(get_packing, to_list[1]))
-
+'''
 with open('V2DT.h', 'r') as content_file:
 	to_dict = {}
 	from_dict = {}
@@ -73,7 +73,7 @@ with open('V2DT.h', 'r') as content_file:
 	matches = re.findall(r'{([^{}]*)}', content)
 	#print parse_into_dict(matches[0].split(), to_dict)
 	#print parse_into_dict(matches[1].split(), from_dict)
-
+'''
 v2_drivetrain = DataStructure('@V2DT')
 v2_drivetrain.to_dict['speed1'] = ['B', ord('a')]
 v2_drivetrain.to_dict['speed2'] = ['B', ord('b')]
