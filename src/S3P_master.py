@@ -81,4 +81,4 @@ except KeyboardInterrupt:
 	print "Closing threads, serial port, and quitting..."
 	sertest.stop()
 	manager.close()
-	quit()
+	quit(0)
