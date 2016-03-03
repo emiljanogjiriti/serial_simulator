@@ -3,7 +3,6 @@ import threads
 import serial
 import serial.tools.list_ports
 import sys
-import data_structures
 import struct
 
 class SerialManager(object):
@@ -63,8 +62,9 @@ class SerialManager(object):
 
 	def receive_into(self, data_structure):
 		if self.serial_io is not None:
-				if self.serial_io.in_waiting >= data_structure.from_struct.size:
+				if self.serial_io.in_waiting == data_structure.from_struct.size:
 					return data_structure.pack_into_received(self.serial_io.read(data_structure.from_struct.size))
+		self.serial_io.reset_input_buffer()
 		return False
 
 	def write(self, message):
@@ -107,9 +107,6 @@ class SerialManager(object):
 		if self.auto_timer is not None:
 			self.auto_timer.stop()
 
-	def add_menu_functions(self, dict):
-		if self.serial_io is not None:
-			dict['p'] = self.start_serial_printer
-			#dict['w'] = self.toggle_watchdog
-			dict[' '] = self.write
-			#dict['a'] = self.start_auto_timer
+if __name__ == '__main__':
+	ser = SerialManager()
+	ser.list_ports()

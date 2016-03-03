@@ -23,6 +23,11 @@ from threads import AutoTimer, EventWrapper
 from data_structures import v2_drivetrain as v2dt 
 from data_structures import mini_arm as marm
 
+marm.status = ord('k')
+v2dt.speed1 = 1
+v2dt.speed2 = 255
+v2dt.status = ord('k')
+
 def e0():
 	manager.write(marm.get_outgoing_struct())
 
@@ -41,7 +46,7 @@ ev0 = EventWrapper(e0, 0)
 ev1 = EventWrapper(e1, marm.calculate_timeout(115200))
 ev2 = EventWrapper(e2, marm.calculate_timeout(115200) + v2dt.calculate_timeout(115200))
 
-sertest = AutoTimer(period=0.1, events=[ev0,ev1,ev2])
+sertest = AutoTimer(period=1, events=[ev0,ev1,ev2])
 
 if manager.open_port('0', 115200):
 	sertest.start()
@@ -50,7 +55,8 @@ try:
 	while True:
 
 		if dataflag:
-			print(marm.dataOut)
+			print(marm.voltages)
+			print(marm.test)
 			dataflag = False
 
 		#user_input = raw_input()
