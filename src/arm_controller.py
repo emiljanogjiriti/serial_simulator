@@ -40,12 +40,12 @@ while alive:
 	user_input = utils.getch()
 
 	if manager.open_port(user_input, 57600):
-		manager.add_menu_functions(function_dict)
-
+		'''
 		elbow_rotation = PololuController(manager, 1, 'a', 'd')
 		elbow_elevation = PololuController(manager, 2, 's', 'w')
 		elbow_rotation.add_menu_functions(function_dict)
 		elbow_elevation.add_menu_functions(function_dict)
+		'''
 
 		serv_2 = Robotis_Servo(manager, 2, 'i', 'k')
 		print 'Setting up Dynamixel 2'
