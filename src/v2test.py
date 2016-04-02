@@ -22,7 +22,7 @@ logging.info('Start of P')
 
 s = ser()
 s.list_ports()
-s.open_port(1, 115200)
+s.open_port(0, 115200)
 
 marm.status = ord('U')
 
@@ -31,8 +31,9 @@ class AppThing():
 		self.app = app
 	def serial_stuff(self):
 		while(True):
+			logging.info(marm.get_outgoing_struct())
 			s.write(marm.get_outgoing_struct())
-			time.sleep(0.02)
+			time.sleep(0.0417)
 			if(s.receive_into(marm)):
 				scaled = [ v / 1000.0 for v in marm.voltages]
 				logging.info(scaled)
