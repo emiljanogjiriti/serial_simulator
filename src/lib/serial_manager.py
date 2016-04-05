@@ -7,106 +7,101 @@ import struct
 
 class SerialManager(object):
 
-	user_input = None
-	user_port = None
-	user_baud = None
-	serial_io = None
-	watchdog = None
-	auto_timer = None
-	serial_printer = None
-	ports = None
+    def __init__(self):
+        self.port_blacklist = ["ttyS", "COM35"] #ignore internal linux ports, bad bluetooth
+        self.find_ports()
+        self.mutex = thread.allocate_lock()
+        print ""
+        print "Initializing serial manager..."
+        self.counter = 0
 
-	def __init__(self):
-		print ""
-		print "Initializing serial manager..."
-		self.counter = 0
+    def open_port(self, user_input, baud):
+        '''
+        wrapper around the pyserial class Serial
+        '''
+        self.acq_mutex()
+        try:
+            self.user_port = self.ports[int(user_input)][0]
+            print "Attempting to connect to port " + self.user_port + "..."
+            self.serial_io = serial.Serial(
+                port        = self.user_port,
+                baudrate    = baud,
+                parity      = serial.PARITY_NONE,
+                stopbits    = serial.STOPBITS_ONE,
+                bytesize    = serial.EIGHTBITS,
+                xonxoff     = False,
+                timeout     = 0.5,
+                writeTimeout = None
+            )
+            print ""
+            print "Connected"
+            self.rel_mutex()
+            return True
+        except serial.serialutil.SerialException:
+            print ""
+            print "Connection failed"   
+            self.rel_mutex()
+            return False
 
-	def open_port(self, user_input, baud):
+    def acq_mutex(self):
+        #print('Acquiring mutex')
+        self.mutex.acquire()
 
-		self.mutex = thread.allocate_lock()
-		self.acquire_mutex()
+    def rel_mutex(self):
+        #print('Releasing mutex')
+        self.mutex.release()
 
-		try:
-			self.user_port = self.ports[int(user_input)][0]
-			print ""
-			print "Attempting to connect to port " + self.user_port + "..."
-			self.serial_io = serial.Serial(
-				port 		= self.user_port,
-				baudrate 	= baud,
-				parity 		= serial.PARITY_NONE,
-				stopbits 	= serial.STOPBITS_ONE,
-				bytesize	= serial.EIGHTBITS,
-				xonxoff 	= False,
-				timeout 	= None,
-				writeTimeout = None
-			)
-			print ""
-			print "Connected"
-			return True
+    def receive_into(self, data_structure):
+        '''
+        Attempts to load the received serial data into a c-like struct
+        @returns True if successful
+        '''
+        if self.serial_io is not None:
+                if self.serial_io.in_waiting == data_structure.from_struct.size:
+                    return data_structure.pack_into_received(self.serial_io.read(data_structure.from_struct.size))
+        self.serial_io.reset_input_buffer()
+        return False
 
-		except serial.serialutil.SerialException:
-			print ""
-			print "Connection failed"	
-			return False	
+    def write(self, message):
+        self.counter += 1
+        self.counter = self.counter % 128
+        if self.serial_io is not None:
+            self.serial_io.write(message)
 
-		except Exception as e:
-			sys.exc_clear()
-			return False
-		self.release_mutex()
+    def read_serial(self, nBytes=1):
+        # It is up to the caller to acquire / release mutex
+        rep = self.serial_io.read( nBytes )
+        return rep
 
-	def acquire_mutex(self):
-		self.mutex.acquire()
+    def start_serial_printer(self):
+        DataStructure = data_structures.v2_drivetrain
+        print "Starting serial printer listening to " + DataStructure.delimiter + " on " + self.user_port
+        self.serial_printer = threads.SerialPrinter(self.serial_io, DataStructure)
 
-	def release_mutex(self):
-		self.mutex.release()
+    def find_ports(self):
+        '''
+        Finds all the connected ports and saves them to self.ports
+        Called by constructor
+        '''
+        self.ports = list(serial.tools.list_ports.comports())
+        dead_ports = list()
+        for port in self.ports:
+            if any(x in port[1] for x in self.port_blacklist):
+                dead_ports.append(port)
+        for port in dead_ports:
+            self.ports.remove(port)
+        return self.ports
 
-	def receive_into(self, data_structure):
-		if self.serial_io is not None:
-				if self.serial_io.in_waiting == data_structure.from_struct.size:
-					return data_structure.pack_into_received(self.serial_io.read(data_structure.from_struct.size))
-		self.serial_io.reset_input_buffer()
-		return False
+    def list_ports(self):
+        for i in xrange(len(self.ports)):
+            print "[" + str(i) + "] " + self.ports[i][0]
 
-	def write(self, message):
-		self.counter += 1
-		self.counter = self.counter % 128
-		if self.serial_io is not None:
-			self.serial_io.write(message)
-
-	def toggle_watchdog(self):
-		if self.watchdog is None:
-			print "Starting watchdog..."
-			self.watchdog = threads.Watchdog()
-		else:
-			print "Stopping watchdog..."
-			self.watchdog.stop()
-			self.watchdog = None
-
-	def start_serial_printer(self):
-		DataStructure = data_structures.v2_drivetrain
-		print "Starting serial printer listening to " + DataStructure.delimiter + " on " + self.user_port
-		self.serial_printer = threads.SerialPrinter(self.serial_io, DataStructure)
-
-	def list_ports(self):
-		self.ports = list(serial.tools.list_ports.comports())
-		dead_ports = list()
-		'''following 5 lines are to prevent Linux machines from showing non-USB ports'''
-		for port in self.ports:
-			if "ttyS" in port[1]:
-				dead_ports.append(port)
-		for port in dead_ports:
-			self.ports.remove(port)
-		for i in xrange(len(self.ports)):
-			print "[" + str(i) + "] " + self.ports[i][0]
-
-	def close(self):
-		if self.watchdog is not None:
-			self.watchdog.stop()
-		if self.serial_printer is not None:
-			self.serial_printer.stop()
-		if self.auto_timer is not None:
-			self.auto_timer.stop()
+    def close(self):
+        try:
+            self.serial_printer.stop()
+        except AttributeError:
+            pass
 
 if __name__ == '__main__':
-	ser = SerialManager()
-	ser.list_ports()
+    ser = SerialManager()
+    ser.list_ports()

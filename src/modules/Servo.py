@@ -41,7 +41,7 @@ import serial_manager
 class Robotis_Servo():
     ''' Class to use a robotis RX-28 or RX-64 servo.
     '''
-    def __init__(self, SerialManager, servo_id, cw_key, ccw_key):
+    def __init__(self, SerialManager, servo_id):
         ''' USB2Dynamixel - USB2Dynamixel_Device object to handle serial port.
                             Handles threadsafe operation for multiple servos
             servo_id - servo ids connected to USB2Dynamixel 1,2,3,4 ... (1 to 253)
@@ -54,15 +54,13 @@ class Robotis_Servo():
         defaults = {
             'home_encoder': 0x7FF,
             'max_encoder': 0xFFF,
-            'rad_per_enc': math.radians(360.0) / 0xFFF, 
+            'rad_per_enc': math.radians(360.0) / 1024, 
             'max_ang': math.radians(180),
             'min_ang': math.radians(-180),
             'flipped': False,
-            'max_speed': math.radians(100)
+            'max_speed': math.radians(360)
         }
 
-        self.cw_key = cw_key
-        self.ccw_key = ccw_key
         self.position = 1800
 
         # Error Checking
@@ -181,13 +179,12 @@ class Robotis_Servo():
             data = self.write_address( 0X1B , [value] )
 
     def move_angle(self, ang, angvel=None, blocking=True):
-        ''' move to angle (radians)
+        ''' move to angle in DEGREES
         '''
         #print "angle: "+ang
         if not isinstance(ang, float) or not isinstance(ang, int):
             ang= float(ang)
-        ang= math.radians(ang)
-
+        #ang= math.radians(ang) #comment out for rads
         if angvel == None:
             angvel = self.settings['max_speed']
 
@@ -291,10 +288,21 @@ class Robotis_Servo():
         msg = [ id, len(instruction) + 1 ] + instruction # instruction includes the command (1 byte + parameters. length = parameters+2)
         chksum = self.__calc_checksum( msg )
         msg = [ 0xff, 0xff ] + msg + [chksum]
+        
+        self.dyn.acq_mutex()
 
-        self.send_serial(msg)
+        try:
+            self.send_serial( msg )
+            data, err = self.receive_reply()
+        except:
+            self.dyn.rel_mutex()
+            raise
+        self.dyn.rel_mutex()
+        
+        if err != 0:
+            self.process_err( err )
 
-        return [100, 0]
+        return data
 
     def process_err( self, err ):
         raise RuntimeError('lib_robotis: An error occurred: %d\n' % err)
@@ -310,7 +318,7 @@ class Robotis_Servo():
         err = self.dyn.read_serial( 1 )
         data = self.dyn.read_serial( ord(data_len) - 2 )
         checksum = self.dyn.read_serial( 1 ) # I'm not going to check...
-        return [ord(v) for v in data], ord(err) 
+        return [ord(v) for v in data], ord(err)
 
     def send_serial(self, msg):
         """ sends the command to the servo
@@ -339,7 +347,3 @@ class Robotis_Servo():
         #self.manager.acquire_mutex()
         self.manager.serial_io.write(command)
         #self.manager.release_mutex()
-
-    def add_menu_functions(self, dict):
-        dict[self.cw_key] = self.move_cw
-        dict[self.ccw_key] = self.move_ccw
