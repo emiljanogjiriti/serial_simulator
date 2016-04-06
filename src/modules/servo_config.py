@@ -15,7 +15,8 @@ servo_param = {
     2: {
         'home_encoder': 0,
         'max_ang': math.radians( 360 ),
-        'min_ang': math.radians( 0 )
+        'min_ang': math.radians( 0 ),
+        'rad_per_enc': math.radians(360.0) / 4096
         },
     3: {
         'home_encoder': 0,
@@ -31,6 +32,7 @@ servo_param = {
         'home_encoder': 0x01FF,
         'max_encoder': 0xFFF,  # Assumes 0 is min.
         'flipped': False,
+        'rad_per_enc': math.radians(360.0) / 4096
         }
 }
 

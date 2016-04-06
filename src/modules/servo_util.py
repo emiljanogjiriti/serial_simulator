@@ -36,7 +36,7 @@ time.sleep(1)
 servo_list = []
 
 for i, port in enumerate(ser.ports):
-	if ser.open_port(i, 115200):
+	if ser.open_port(i, 57600):
 		print('Scanning at 115.2 Kbps')
 		for i in range(1, 10):
 			try:

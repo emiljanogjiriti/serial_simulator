@@ -54,7 +54,7 @@ class Robotis_Servo():
         defaults = {
             'home_encoder': 0x7FF,
             'max_encoder': 0xFFF,
-            'rad_per_enc': math.radians(360.0) / 1024, 
+            'rad_per_enc': math.radians(360.0) / 4096, 
             'max_ang': math.radians(180),
             'min_ang': math.radians(-180),
             'flipped': False,
@@ -153,30 +153,6 @@ class Robotis_Servo():
         if self.settings['flipped']:
             ang = ang * -1.0
         return ang
-
-    def read_propGain(self):
-        data = self.read_address( 0X1C , 1 )
-        return data[0]
-
-    def write_propGain(self, value):
-        if value > 0:
-            data = self.write_address( 0X1C , [value] )
-
-    def read_dervGain(self):
-        data = self.read_address( 0X1A , 1 )
-        return data[0]
-
-    def write_dervGain(self, value):
-        if value > 0:
-            data = self.write_address( 0X1A , [value] )
-
-    def read_intGain(self):
-        data = self.read_address( 0X1B , 1 )
-        return data[0]
-
-    def write_intGain(self, value):
-        if value > 0:
-            data = self.write_address( 0X1B , [value] )
 
     def move_angle(self, ang, angvel=None, blocking=True):
         ''' move to angle in DEGREES
