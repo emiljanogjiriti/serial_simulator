@@ -18,7 +18,7 @@ class PololuController(object):
 		if position > 50:
 			position = 50
 
-		print "Moving to " + str(position)
+		#print "Moving to " + str(position)
 
 		if position >= 0:
 			pololu_command = 0x61
