@@ -83,11 +83,11 @@ if manager2.open_port(user_input, 57600):
 			else:
 				hold_counter = 0
 			if hold_counter < 50:
-				s5_angle = (marm.voltages[5] - 2550) / 800.0 + 2
+				s5_angle = (marm.voltages[5] - 2550) / 900.0 + 2
 				s2_angle = (2350 - marm.voltages[6]) / 300.0 + 2.5
 				e_rot_angle = (marm.voltages[4] - 2600) / 20
 				e_elev_angle = (marm.voltages[1] - 2400) / 25
-			else:
+			'''else:
 				if hold_counter >= 250: hold_counter = 50
 				print 'Starting auto routine'
 				arr_i = (hold_counter / 50) % 4
@@ -97,7 +97,7 @@ if manager2.open_port(user_input, 57600):
 				s5_angle = s5_array[arr_i]
 				s2_angle = s2_array[arr_i]
 				print e_rot_angle
-				print e_elev_angle
+				print e_elev_angle'''
 			e_rot.move_to(e_rot_angle)
 			e_elev.move_to(e_elev_angle)
 			serv_5.move_angle(s5_angle, 0.8, blocking=False)
