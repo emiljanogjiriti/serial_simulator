@@ -1,5 +1,7 @@
 # max.prokopenko@gmail.com
 # written for openrobotics.ca
+from __future__ import print_function
+from __future__ import unicode_literals
 import sys
 from os import path
 sys.path.append(path.dirname(__file__) + 'lib/') #for generic functionality
@@ -22,17 +24,17 @@ def quit():
 	alive = False
 
 manager1 = SerialManager()
-print 'Ports available'
+print('Ports available')
 manager1.list_ports()
-print 'Select Dynamixel port'
+print('Select Dynamixel port')
 user_input = utils.getch()
 
 if manager1.open_port(user_input, 57600):
 	
 	serv_2 = Robotis_Servo(manager1, 1)
-	print 'Setting up Dynamixel 2'
+	print('Setting up Dynamixel 2')
 	
-	print 'Dynamixel 2 at ' + str(serv_2.read_angle())
+	print('Dynamixel 2 at ' + str(serv_2.read_angle()))
 
 	while(alive):
 		serv_2.move_angle(1, 1.5, blocking=False)

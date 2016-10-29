@@ -1,4 +1,9 @@
-import thread
+from __future__ import print_function
+from __future__ import unicode_literals
+try:
+    import thread
+except ImportError:
+    import _thread
 import threads
 import serial
 import serial.tools.list_ports
@@ -11,8 +16,8 @@ class SerialManager(object):
         self.port_blacklist = ["ttyS", "COM35"] #ignore internal linux ports, bad bluetooth
         self.find_ports()
         self.mutex = thread.allocate_lock()
-        print ""
-        print "Initializing serial manager..."
+        print()
+        print('Initializing serial manager...')
         self.counter = 0
 
     def open_port(self, user_input, baud):
@@ -22,7 +27,7 @@ class SerialManager(object):
         self.acq_mutex()
         try:
             self.user_port = self.ports[int(user_input)][0]
-            print "Attempting to connect to port " + self.user_port + "..."
+            print('Attempting to connect to port ' + self.user_port + '...')
             self.serial_io = serial.Serial(
                 port        = self.user_port,
                 baudrate    = baud,
@@ -33,13 +38,13 @@ class SerialManager(object):
                 timeout     = 0.5,
                 writeTimeout = None
             )
-            print ""
-            print "Connected"
+            print()
+            print('Connected')
             self.rel_mutex()
             return True
         except serial.serialutil.SerialException:
-            print ""
-            print "Connection failed"   
+            print()
+            print('Connection failed')
             self.rel_mutex()
             return False
 
@@ -75,7 +80,7 @@ class SerialManager(object):
 
     def start_serial_printer(self):
         DataStructure = data_structures.v2_drivetrain
-        print "Starting serial printer listening to " + DataStructure.delimiter + " on " + self.user_port
+        print('Starting serial printer listening to ' + DataStructure.delimiter + ' on ' + self.user_port)
         self.serial_printer = threads.SerialPrinter(self.serial_io, DataStructure)
 
     def find_ports(self):
@@ -94,7 +99,7 @@ class SerialManager(object):
 
     def list_ports(self):
         for i in xrange(len(self.ports)):
-            print "[" + str(i) + "] " + self.ports[i][0]
+            print('[' + str(i) + '] ' + self.ports[i][0])
 
     def close(self):
         try:

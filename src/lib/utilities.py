@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import unicode_literals
+
 class Utility:
 
 	os_name = ""
@@ -9,8 +12,8 @@ class Utility:
 
 	def __init__(self):
 
-		print ""
-		print "Checking dependencies..."
+		print()
+		print("Checking dependencies...")
 
 		import platform
 		import os
@@ -22,8 +25,8 @@ class Utility:
 		elif platform.dist()[0] != '':
 			self.os_name = self.os_linux
 
-		print ""
-		print self.os_name + " platform detected"
+		print()
+		print(self.os_name + " platform detected")
 
 		if self.os_name == self.os_win:
 			import msvcrt
@@ -34,15 +37,14 @@ class Utility:
 			except ImportError:
 				from subprocess import call
 				call(["python", "getch/setup.py", "install"])
-		    	import getch
+				import getch
 			self.getch_lib = getch
 			if not (os.getuid() == 0):
-				print ""
-				print "This program needs administrative access to use USB ports"
-				print "Please run again using sudo"
-				print ""
+				print()
+				print('This program needs administrative access to use USB ports')
+				print('Please run again using sudo')
+				print()
 				quit()
-    			
 
 	def getch(self):
 		return self.getch_lib.getch()
