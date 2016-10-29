@@ -6,4 +6,4 @@ This repository contains a serial simulator for Super Simple Serial Protocol (SS
 Python 2.7<br>
 <a href="https://pypi.python.org/pypi/pyserial">pyserial</a> for serial communications<br>
 ###Using for V1 arm control<br>
-Run <code>src/arm_controller_v1.py</code>
+Run <code>src/arm_controller.py</code>
