@@ -4,7 +4,6 @@ try:
     import thread
 except ImportError:
     import _thread
-import threads
 try:
     import serial
     import serial.tools.list_ports
@@ -24,13 +23,13 @@ class SerialManager(object):
         print('Initializing serial manager...')
         self.counter = 0
 
-    def open_port(self, user_input, baud):
+    def open_port(self, user_port, baud):
         '''
         wrapper around the pyserial class Serial
         '''
         self.acq_mutex()
         try:
-            self.user_port = self.ports[int(user_input)][0]
+            self.user_port = self.ports[int(user_port)][0]
             print('Attempting to connect to port ' + self.user_port + '...')
             self.serial_io = serial.Serial(
                 port        = self.user_port,
@@ -85,7 +84,7 @@ class SerialManager(object):
     def start_serial_printer(self):
         DataStructure = data_structures.v2_drivetrain
         print('Starting serial printer listening to ' + DataStructure.delimiter + ' on ' + self.user_port)
-        self.serial_printer = threads.SerialPrinter(self.serial_io, DataStructure)
+        #self.serial_printer = threads.SerialPrinter(self.serial_io, DataStructure)
 
     def find_ports(self):
         '''
