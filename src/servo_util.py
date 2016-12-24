@@ -6,6 +6,7 @@
 '''
 from __future__ import print_function
 from __future__ import unicode_literals
+if 'raw_input' not in dir(__builtins__): raw_input = input
 import os
 from os import path
 from os import sep
@@ -49,7 +50,8 @@ def find_servos():
 			ang = r.read_angle()
 			servo_list.append(r)
 			print('Servo found at id ' + str(i) + ' at angle %.3f' % ang)
-		except RuntimeError, e:
+		except RuntimeError as e:
+			print(e)
 			pass
 
 def exit(): quit()
@@ -91,7 +93,7 @@ function_dict['o'] = open_port
 
 while user_input not in ['q','Q','quit','exit']:
 	print('Select option')
-	for k in function_dict.iterkeys():
+	for k in function_dict.keys():
 		print('['+str(k)+']:'+str(function_dict[k].__name__	))
 	user_input = raw_input()
 	try:

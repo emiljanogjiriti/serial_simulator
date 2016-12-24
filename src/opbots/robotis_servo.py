@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from __future__ import print_function
 #
 # Copyright (c) 2009, Georgia Tech Research Corporation
 # All rights reserved.
@@ -32,11 +33,14 @@
 ## Authors: Travis Deyle, Advait Jain & Marc Killpack (Healthcare Robotics Lab, Georgia Tech.)
 
 import time
-import thread
+try:
+    import thread
+except:
+    import _thread as thread
 import sys, optparse
 import math
 import string
-import serial_manager
+import opbots.serial_manager
 
 class RobotisServo():
     ''' Class to use a robotis RX-28 or RX-64 servo.
@@ -87,9 +91,9 @@ class RobotisServo():
             if sc.servo_param.has_key( self.servo_id ):
                 self.settings = sc.servo_param[ self.servo_id ]
             else:
-                print 'Warning: servo_id ', self.servo_id, ' not found in servo_config.py.  Using defaults.'
+                print('Warning: servo_id ', self.servo_id, ' not found in servo_config.py.  Using defaults.')
         except:
-            print 'Warning: servo_config.py not found.  Using defaults.'
+            print('Warning: servo_config.py not found.  Using defaults.')
 
         # Set to default any parameter not specified in servo_config
         for key in defaults.keys():
@@ -189,13 +193,13 @@ class RobotisServo():
             angvel = self.settings['max_speed']
 
         if angvel > self.settings['max_speed']:
-            print 'lib_robotis.move_angle: angvel too high - %.2f deg/s' % (math.degrees(angvel))
-            print 'lib_robotis.ignoring move command.'
+            print('lib_robotis.move_angle: angvel too high - %.2f deg/s' % (math.degrees(angvel)))
+            print('lib_robotis.ignoring move command.')
             return
 
         if ang > self.settings['max_ang'] or ang < self.settings['min_ang']:
-            print 'lib_robotis.move_angle: angle out of range- ', math.degrees(ang)
-            print 'lib_robotis.ignoring move command.'
+            print('lib_robotis.move_angle: angle out of range- ', math.degrees(ang))
+            print('lib_robotis.ignoring move command.')
             return
         
         self.set_angvel(angvel)
@@ -330,11 +334,9 @@ class RobotisServo():
 
     def move_cw(self):
         self.move(20)
-        print "Moving Dynamixel"
 
     def move_ccw(self):
         self.move(-20)
-        print "Moving Dynamixel"
 
     def move(self, adjustment):
         self.position = self.position + adjustment
@@ -343,7 +345,4 @@ class RobotisServo():
         self.move_to_encoder(int(self.position))
 
     def send_command(self, command):
-        print command
-        #self.manager.acquire_mutex()
         self.manager.serial_io.write(command)
-        #self.manager.release_mutex()

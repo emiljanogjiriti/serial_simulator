@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 try:
     import thread
 except ImportError:
-    import _thread
+    import _thread as thread
 try:
     import serial
     import serial.tools.list_ports
@@ -101,7 +101,7 @@ class SerialManager(object):
         return self.ports
 
     def list_ports(self):
-        for i in xrange(len(self.ports)):
+        for i in range(len(self.ports)):
             print('[' + str(i) + '] ' + self.ports[i][0])
 
     def close(self):
