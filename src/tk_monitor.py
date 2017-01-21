@@ -1,17 +1,19 @@
 '''
 Author:    max@embeddedprofessional.com
 '''
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import print_function, unicode_literals, division
+if 'raw_input' not in dir(__builtins__): raw_input = input
 from Tkinter import *
 import tkFont
+import ttk
 from threading import Thread
 import time
+import logging
+from opbots import *
 
 class Application(Frame):
-    def __init__(self, master=None, screen_size=(1080, 720)):
+    def __init__(self,master=None,screen_size=(1080, 720)):
         Frame.__init__(self, master)
-        self.is_alive = True
         self.screen_w = screen_size[0]
         self.screen_h = screen_size[1]
         self.displayed_struct = None
@@ -22,50 +24,78 @@ class Application(Frame):
         self.w.delete(ALL)
 
     def draw_periodic(self):
-        font = tkFont.Font(family='Helvetica',size=16, name="font16s")
-        while self.is_alive:
-            #monitor.sample_stream_once()
-            if self.displayed_struct:
-                self.w.delete(ALL)
-                for float_var in ['adsBody[8]', 'ltcBody[17]', 'tivaBody[12]', 'alarm[8]']:
-                    try:
-                        samples = self.displayed_struct
-                        for i, sample in enumerate(samples):
-                            bar_height = -sample / 5 * self.screen_h / 2
-                            bar_width = self.screen_w / len(samples)
-                            self.w.create_rectangle(i * bar_width, self.screen_h / 2, i * bar_width + bar_width, bar_height + self.screen_h / 2, fill='#ff0')
-                            self.w.create_text(i * bar_width + bar_width / 2, self.screen_h / 2, text='%5.3f' % sample, justify='center', fill='black', font=font)
-                        break
-                    except KeyError, e:
-                        pass
-                self.w.create_text(500, 200, text=self.displayed_struct.__repr__(), font=font, anchor='e')
-                self.w.update()
-            time.sleep(0.01)
+        #font = tkFont.Font(family='Helvetica',size=16, name="font16s")
+        self.canvas.after(50, self.draw_periodic)
 
     def quit(self):
-        self.is_alive = False
         Frame.quit(self)
 
+    def list_serial_ports(self,*args):
+        ser = SerialManager()
+        self.ser_info['text'] = 'Serial ports available:\n'
+        for port in ser.find_ports():
+            self.ser_info['text'] += str(port)
+
     def createWidgets(self):
-        self.QUIT = Button(self)
+        self.grid_columnconfigure(0,weight=1)
+        self.grid_columnconfigure(1,weight=1)
+
+        self.frame_left = Frame(self,bd=1,relief=SUNKEN)
+        self.frame_left.grid(column=0,row=0,sticky=NW)
+        self.frame_left.grid_columnconfigure(0,weight=1,minsize=500)
+        #self.frame_left.grid_propagate(0)
+
+        self.frame_right = Frame(self,bd=1,relief=SUNKEN)
+        self.frame_right.grid(column=1,row=0,sticky=NE)
+        self.frame_right.grid_columnconfigure(0,weight=1,minsize=500)
+
+        self.QUIT = Button(self.frame_left)
         self.QUIT['text'] = 'QUIT'
         self.QUIT['fg']   = 'red'
         self.QUIT['command'] =  self.quit
+        self.QUIT.grid(column=0,row=0)
 
-        self.QUIT.pack({'side': 'left'})
+        self.out = ttk.Label(self.frame_left,text='Output')
+        self.out.grid(column=0,row=2,sticky=W)
 
-        self.id_buttons = []
-        i = 0
-        for c_struct in ['abc', 'def']:#monitor.name_dict.values():
-            id_button = Button(self)
-            id_button['text'] = 'barf'#c_struct.name
-            id_button.pack({'side':'left'})
-            #id_button['command'] = lambda x=c_struct.name: self.set_displayed(x)
-            i += 1
-            self.id_buttons.append(id_button)
+        photo = PhotoImage(file='../img/test_marker.gif')
+        w = Label(self.frame_left,image=photo)
+        w.photo = photo
+        w.grid(column=0,row=3,sticky=S)
 
-        self.w = Canvas(self.master, width=self.screen_w, height=self.screen_h)
-        self.w.pack()
+        photo = PhotoImage(file='../img/test_marker.gif')
+        w = Label(self.frame_right,image=photo)
+        w.photo = photo
+        w.grid(column=0,row=3,sticky=S)
+
+        self.console = Text(self.frame_left,height=1,width=50)
+        self.console.grid(column=0,row=1,sticky=W)
+        self.console.bind('<Return>',self.t)
+
+        self.ser_info = ttk.Label(self.frame_right,text='Output')
+        self.ser_info.grid(column=0,row=2,sticky=W)
+        self.ser_info['text'] = 'Serial data here'
+        
+        self.list_button = Button(self.frame_right)
+        self.list_button['text'] = 'List serial ports'
+        self.list_button['command'] = self.list_serial_ports
+        self.list_button.grid(column=0,row=0)
+        '''
+        self.serial_console = ttk.Label(self.frame_left,text='Oh shitt',width=20)
+        self.serial_console.grid(column=0,row=2,sticky=W)
+        self.serial_console['text'] = 'Serial stuff'
+        self.serial_console.configure(background='#4D4D4D')
+
+        self.text = Text(self,height=1)
+        self.text.grid(column=0,row=1,columnspan=2)
+        self.text.bind("<Return>",self.t)
+        '''
+        self.canvas = Canvas(self.master,width=self.screen_w,height=self.screen_h)
+        #self.canvas.pack()
+
+    def t(self,*args):
+        self.out['text'] = self.console.get('1.0',END)
+        #input = self.myText_Box.get("1.0",'end-1c')
 
     def set_displayed(self, c_struct):
         self.displayed_struct = c_struct
@@ -77,9 +107,11 @@ class Application(Frame):
         go.join()
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
+    mainlog = logging.getLogger('main')
     root = Tk()
-    app = Application(master=root, screen_size=(1080, 720))
-    app.master.minsize(500, 500)
+    app = Application(master=root,screen_size=(1080,720))
+    #app.master.minsize(500,500)
     app.mainloop()
     root.destroy()
 

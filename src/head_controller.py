@@ -31,17 +31,23 @@ user_input = utils.getch()
 
 if manager1.open_port(user_input, 115200):
 	
-	serv = Robotis_Servo(manager1,5)
+	serv2 = Robotis_Servo(manager1,2)
 	print('Setting up Dynamixel')
-	
-	print('Dynamixel angle at ' + str(serv.read_angle()))
-	print('Dynamixel encoder at ' + str(serv.read_encoder()))
+	print('Dynamixel angle at ' + str(serv2.read_angle()))
+	print('Dynamixel encoder at ' + str(serv2.read_encoder()))
+
+	serv5 = Robotis_Servo(manager1,5)
+	print('Setting up Dynamixel')
+	print('Dynamixel angle at ' + str(serv5.read_angle()))
+	print('Dynamixel encoder at ' + str(serv5.read_encoder()))
 
 	while(alive):
 		#serv.move_angle(1, 1.5, blocking=False)
-		serv.move_to_encoder(650)
-		time.sleep(1)
-		serv.move_to_encoder(700)
-		time.sleep(1)
+		serv2.move_angle(0.5,blocking=False)
+		serv5.move_angle(0.1,blocking=False)
+		time.sleep(2)
+		serv2.move_angle(0.1,blocking=False)
+		serv5.move_angle(0.5,blocking=False)
+		time.sleep(2)
 
 manager1.close()
